@@ -15,3 +15,17 @@ notebooks/
 results/
 results_old/
 
+.commands.txt
+Hyperparameters.ipynb
+PaperPlots_ClosedWorld.ipynb
+PaperPlots_OpenWorld.ipynb
+competence_estimation/create_inn_scores.py
+plots_histo_rotatedMNIST.ipynb
+results_percentage.csv
+results_percentages.pickle
+
+
+ClassifiersDifferences.ipynb
+OneClassifier.ipynb
+
+

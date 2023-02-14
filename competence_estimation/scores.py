@@ -40,9 +40,27 @@ def create_score_function(
     w,
     b,
     score_function="max_softmax",
+    **kwargs
 ):
+    """
+    Return score on validation set and scoring function that computes the OOD score for a given feature and logit.
+    In the following N is the sample size and D the feature dimension, as well as L the number of classes
+    Arguments:
+        - x_iid_train: Input features of shape (N,D) from training set (iid) 
+        - logits_iid_train: Logits computed on features of shape (N,L) from training set (iid)
+        - y_iid_train: Labels on training set of shape (N,) (iid)
+        - x_iid_val: Input features of shape (N,D) from validation set  (iid)
+        - logits_iid_val: Logits computed on features of shape (N,L) from validstion set (iid)
+        - y_iid_val: Labels on validation set of shape (N,) (iid)
+        - w: layer of last layer
+        - b: bias of last layer
+        - score_function: Name of score function for which we want to return scores and scoring function
+    Return:
+        - scores_iid: Scores on validation set
+        - score_function: Score function that gets (features, logits) as input and returns the corresponding score
+    """
 
-    assert score_function in ["max_softmax", "max_logit", "vim", "mahalanobis", "knn", 'energy']
+    assert score_function in ["max_softmax", "max_logit", "vim", "mahalanobis", "knn", 'energy', 'energy_react', 'GMM', 'HBOS', 'PCA']
 
     if score_function == "max_softmax":
         score_iid = -softmax(logits_iid_val, axis=-1).max(axis=-1)
@@ -50,6 +68,59 @@ def create_score_function(
         def score_function(features, logits):
             score = -softmax(logits, axis=-1).max(axis=-1)
             return score
+
+    elif score_function == "PCA":
+        import pyod.models.pca as pca
+        clf = pca.PCA(n_components=None, n_selected_components=None, contamination=0.1, copy=True, whiten=False, svd_solver='auto', tol=0.0, iterated_power='auto', random_state=None, weighted=True, standardization=True)
+        clf.fit(x_iid_train)
+        score_iid =  clf.decision_function(x_iid_val)
+        def score_function(feature, logit):
+            score =  clf.decision_function(feature)
+            return score
+
+
+    elif score_function == 'GMM':
+        import pyod.models.gmm as gmm
+        if 'n_components' in kwargs:
+            n_components = kwargs['n_components']
+        else:
+            n_components =1
+        clf = gmm.GMM(n_components=n_components, covariance_type='full', tol=0.001, reg_covar=1e-06, max_iter=100, n_init=1, init_params='kmeans', weights_init=None, means_init=None, precisions_init=None, random_state=None, warm_start=False, contamination=0.1)
+        clf.fit(x_iid_train)
+        score_iid =  clf.decision_function(x_iid_val)
+        def score_function(feature, logit):
+            score =  clf.decision_function(feature)
+            return score
+
+    elif score_function == "HBOS":
+        import  pyod.models.hbos as hbos
+        if 'n_bins' in kwargs:
+            n_bins = kwargs['n_bins']
+            print(f"n_bins {n_bins} chosen")
+        else:
+            n_bins =1
+        clf = hbos.HBOS(n_bins=n_bins, alpha=0.1, tol=0.5, contamination=0.1)
+        clf.fit(x_iid_train)
+        score_iid =  clf.decision_function(x_iid_val)
+        def score_function(feature, logit):
+            score =  clf.decision_function(feature)
+            return score
+
+
+    elif score_function == 'energy_react':
+        """
+        score  due to  https://github.com/haoqiwang/vim/blob/master/benchmark.py
+        """
+        default_clip_quantile = 0.99
+        clip = np.quantile(x_iid_train, default_clip_quantile)
+
+        logit_id_val_clip = np.clip(x_iid_val, a_min=None, a_max=clip) @ w.T + b
+        score_iid = - logsumexp(logit_id_val_clip, axis=-1)
+        def score_function(features, logits):
+            logit_clip = np.clip(features, a_min=None, a_max=clip) @ w.T + b
+            score = - logsumexp(logit_clip, axis=-1)
+            return score
+
 
     elif score_function == 'energy':
         """
@@ -62,7 +133,7 @@ def create_score_function(
             return score
 
     elif score_function == "max_logit":
-        score_iid = -softmax(logits_iid_val, axis=-1).max(axis=-1)
+        score_iid = -logits_iid_val.max(axis=-1)
 
         def score_function(features, logits):
             score = -logits.max(axis=-1)
@@ -72,7 +143,11 @@ def create_score_function(
         """
         scores due to https://github.com/deeplearning-wisc/knn-ood
         """
-        K=1
+        if 'K' in kwargs:
+            K = kwargs['K']
+            print('K set to ', K)
+        else:
+            K = 1
         ftrain = normalizer(x_iid_train)
         fval = normalizer(x_iid_val)
         #fest = normalizer(x_test)
@@ -101,7 +176,7 @@ def create_score_function(
         train_means = []
         train_feat_centered = []
         for i in range(logits_iid_val.shape[1]):
-            fs = x_train[y_iid_train == i]  # .numpy()
+            fs = x_iid_train[y_iid_train == i]  # .numpy()
             _m = fs.mean(axis=0)
             train_means.append(_m)
             train_feat_centered.extend(fs - _m)
@@ -111,11 +186,13 @@ def create_score_function(
 
         mean = torch.from_numpy(np.array(train_means)).cuda().float()  # .numpy()
         prec = torch.from_numpy(ec.precision_).cuda().float()  # .numpy()
+        #mean = np.array(train_means)#.float()
+        #prec = ec.precision_#.float()  # .numpy()
 
         score_id = -np.array(
             [
                 (((f - mean) @ prec) * (f - mean)).sum(axis=-1).min().cpu().item()
-                for f in x_val.cuda().float()
+                for f in torch.from_numpy(x_iid_val).cuda().float()
             ]
         )
 
@@ -131,6 +208,10 @@ def create_score_function(
         return -score_id, score_function
 
     elif score_function == "vim":
+        """
+        Vim Score (due to https://github.com/haoqiwang/vim/blob/master/benchmark.py)
+        minor changes w.r.t. DIM variable (adjusted for smaller input dimensions than 1000 dim)
+        """
 
         u = -np.matmul(pinv(w), b)
         feature_id_train = x_iid_train  # .numpy()
@@ -140,7 +221,6 @@ def create_score_function(
         logit_id_val = logits_iid_val  # .numpy()
 
         result = []
-        # Has been chaanged (256 was 512)
         if feature_id_val.shape[-1] >= 2048:
             DIM = 1000
         elif feature_id_val.shape[-1] <= 2048 and feature_id_val.shape[-1] >= 1000:

@@ -9,25 +9,48 @@ import torch.nn.functional as F
 #from surprised_classifiers.models.inns import ConditionalINN
 
 def mix_open(features_ood, logits_ood, labels_ood,  features_open, logits_open, percentage=0.5):
+    """
+    Mixes features of unknown classes to existing features. 
+    Output contains features of unknown classes that make up {percentage}
+    Arguments:
+        - features_ood: Features of ood distribution
+        - logits_ood: Logits of ood distribution
+        - labels_ood: Labels of ood distribution
+        - features_open: Features of unknown classes 
+        - logits_open: Logits of unknown classes 
+        - percentage: Percentage of unkow
+    Returns:
+        - features_out: Features mixed with unkown classes
+        - logits_out: Logits mixed with unknown classes
+        - labels_out: Labels of known classes and label -1 for unknown class
+
+    """
     n = features_ood.shape[0]
-    n_open= int(n*percentage / (1-percentage))#int(n*percentage)
+    n_open= int(n*percentage / (1-percentage))
     if n_open <= features_open.shape[0]:
         pass
-    #print(f"Only {n_open/n} achieved ")
     else:
+        # If we cannot achieve the right percentage with n samples of known classes
+        # In this case we have to 'shorten' n
         n = int(features_open.shape[0]* ((1-percentage)/percentage))
     torch.manual_seed(0)
     idx = torch.randperm(features_open.shape[0])
     features_open = features_open[idx]
+
     features_out = np.concatenate( ( features_ood[:n], features_open[:n_open]))
     logits_out = np.concatenate( (logits_ood[:n], logits_open[:n_open]))
 
     labels_out = np.concatenate((labels_ood[:n], np.zeros((logits_open[:n_open].shape[0])) -1), 0)
-    #labels_out = torch.cat((labels_ood[:n], torch.ones(logits_open[:n_open].shape[0]) -1), 0)
+
+    assert labels_out.shape[0] * percentage - min(n_open, logits_open.shape[0]) >= -1 
+    assert labels_out.shape[0] * percentage - min(n_open, logits_open.shape[0]) <= 1 
 
     return features_out, logits_out, labels_out
 
 def get_network_weights(algorithm, dataset, test_domain, dataset_path):
+    """
+    Get Network weights of trained model
+    """
     W = np.load(f"{dataset_path}/{dataset}/test_env_{test_domain}/{algorithm}_W.npy")
     b = np.load(f"{dataset_path}/{dataset}/test_env_{test_domain}/{algorithm}_b.npy")
                 
@@ -65,7 +88,7 @@ def load_data(algorithm, dataset, test_domain, data_dir, fast=False):
         np.load(f"{dataset_path}/{algorithm}_data_test.npy")
     ), torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_test.npy"))
     '''
-    if not fast:
+    if not fast or True:
         x_iid_train, y_iid_train = np.load(f"{dataset_path}/{algorithm}_features_iid_train.npy") , np.load(f"{dataset_path}/{algorithm}_labels_iid_train.npy")
         x_iid_val, y_iid_val = np.load(f"{dataset_path}/{algorithm}_features_iid_val.npy"), np.load(f"{dataset_path}/{algorithm}_labels_iid_val.npy")
         x_iid_test, y_iid_test =  np.load(f"{dataset_path}/{algorithm}_features_iid_test.npy") , np.load(f"{dataset_path}/{algorithm}_labels_iid_test.npy")

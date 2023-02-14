@@ -126,27 +126,6 @@ def compute_metric(
     """
 
     possible_metrics = [
-        "intersection_fraction",
-        "intersection_fraction_denoised",
-        "intersection_alpha",
-        "ausc_alpha",
-        "dot_product",
-        "dot_product_corrected",
-        "dot_product_corrected_05",
-        "ausc_alpha_normalized",
-        "ausc_alpha_shifted",
-        "ausc_fracs_shifted",
-        "ausc_fracs",
-        "ausc_fracs_normalized",
-        "intersection_fraction_test",
-        "acc_val",
-        "acc_test",
-        "ece_ood_test",
-        "ece_iid_test",
-        "ausc_ece_alpha",
-        "ausc_ece_alpha_shifted"
-    ]
-    possible_metrics = [
         "accuracy",
         "ece",
         'ausc_alpha_ece',
@@ -310,6 +289,21 @@ def compute_metric(
         out['frac_remaining_ood_test'] = fracs_ood[-1]
         out['frac_remaining_iid_test'] = fracs_iid[-1]
 
+        '''
+        earliest = 0
+        if fracs_ood[0] < 0.1:
+            for e, f in enumerate(fracs_ood):
+                if f > 0.09999999:
+                    break
+                earliest +=1
+
+        out["intersection_fraction_ood_test_denoised"] = first_below_line(
+            fracs_ood[earliest:], accs_ood[earliest:], accuracy_iid_val, non_below_default="last_x"
+        )
+            alphas_ood, accs_ood, accuracy_iid_val, non_below_default="last_x"
+        )
+        '''
+
     return out
 
 
@@ -337,109 +331,3 @@ def first_below_line(x_axis, y_values, line, non_below_default="last_x"):
     else:
         return non_below_default
 
-
-@click.command()
-# Required
-@click.option(
-    "--data_dir",
-    help="Path to data directory",
-    metavar="STRING",
-    required=True,
-)
-@click.option(
-    "--model_dir",
-    help="Path to model directory",
-    metavar="STRING",
-    required=True,
-)
-@click.option(
-    "--dataset",
-    help="Dataset/DG task to evaluate the models on.",
-    metavar="STRING",
-    required=True,
-)
-@click.option(
-    "--algorithm",
-    help="Dataset/DG task to evaluate the models on.",
-    metavar="STRING",
-    required=True,
-)
-def main(**kwargs):
-    opts = SimpleNamespace(**kwargs)
-
-    tables = {}
-    try:
-        with open(opts.model_dir + "/metrics.pkl", "rb") as f:
-            metrics_computed = pickle.load(f)
-    except:
-        metrics_computed = {}
-        metrics_computed[opts.dataset] = {}
-
-    metrics_computed[opts.dataset][opts.algorithm] = {}
-
-    n_test_set = []
-    for file_name in os.listdir(opts.model_dir):
-        if (opts.algorithm in file_name) and (opts.dataset in file_name):
-            n_test_set.append(
-                int(re.search("domain(.*)_algorithm", file_name).group(1))
-            )
-    n_test_set = set(n_test_set)
-
-    for test_domain in n_test_set:
-        metrics_computed[opts.dataset][opts.algorithm][test_domain] = {}
-        models = []
-        for file_name in os.listdir(opts.model_dir):
-
-            if (
-                (opts.algorithm in file_name)
-                and (opts.dataset in file_name)
-                and (f"domain{test_domain}" in file_name)
-            ):
-                models.append(
-                    load_model_from_path(file_name, opts.data_dir, opts.model_dir)
-                )
-
-        # Loading data
-        (
-            _,
-            _,
-            _,
-            x_val,
-            logits_val,
-            y_val,
-            x_test,
-            logits_test,
-            y_test,
-        ) = load_data(opts.algorithm, opts.dataset, test_domain, opts.data_dir)
-
-        model = model_selection(models, x_val, y_val)
-
-        metrics = [
-            "intersection_fraction_test",
-            "intersection_fraction",
-            "dot_product",
-            "ausc_alpha_normalized",
-            "ausc_alpha_shifted",
-            "ausc_fracs",
-            "ausc_fracs_shifted",
-        ]
-        outs = compute_metric(
-            model,
-            x_val,
-            logits_val,
-            y_val,
-            x_test,
-            logits_test,
-            y_test,
-            metrics=metrics,
-        )
-
-        metrics_computed[opts.dataset][opts.algorithm][test_domain] = dict(outs)
-
-    with open(opts.model_dir + "/metrics.pkl", "wb") as f:
-        pickle.dump(metrics_computed, f)
-
-
-if __name__ == "__main__":
-    ## TODO:  Have to  check  whether the main function still works (from old suprisaal-repository)
-    main()
