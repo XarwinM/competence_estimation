@@ -3,6 +3,7 @@ import pickle
 import time
 
 import numpy as np
+import torch
 
 from competence_estimation.utils import load_data, get_network_weights, mix_open
 from competence_estimation.scores  import create_score_function 
@@ -29,8 +30,6 @@ metrics  = [
     'fracs'
 ]
 
-
-
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Run a sweep")
@@ -44,14 +43,14 @@ if __name__ == "__main__":
     parser.add_argument("--recompute", type=int, default=0)
     args = parser.parse_args()
 
-    config = {'n_bins':1000}
+    config = {'n_bins':10}
 
 
     if args.add_to_existing:
         print('Existing results loaded')
-        with open(f"{args.output_dir}/results.pickle", 'rb') as handle:
+        with open(f"{args.output_dir}/results_long.pickle", 'rb') as handle:
             results = pickle.load(handle)
-        with open(f"{args.output_dir}/results_scores.pickle", 'rb') as handle:
+        with open(f"{args.output_dir}/results_scores_long.pickle", 'rb') as handle:
             results_scores = pickle.load(handle)
     else:
         results = {}
@@ -135,18 +134,36 @@ if __name__ == "__main__":
                                 )
 
                             if e == 0:
-                                scores_iid_val, score_function = create_score_function(
-                                    iid_train[0],
-                                    iid_train[1],
-                                    iid_train[2],
-                                    iid_val[0],
-                                    iid_val[1],
-                                    iid_val[2],
-                                    w,
-                                    b,
-                                    score_function =  score_function_name,
-                                    **config
-                                )
+                                if iid_train[0].shape[0]>50_000:
+                                    # If more than 50_000 training data: shorten training data
+                                    features_fit = iid_train[0]
+                                    torch.manual_seed(0)
+                                    idx = torch.randperm(features_fit.shape[0])[:50_000]
+                                    scores_iid_val, score_function = create_score_function(
+                                        iid_train[0][idx],
+                                        iid_train[1][idx],
+                                        iid_train[2][idx],
+                                        iid_val[0],
+                                        iid_val[1],
+                                        iid_val[2],
+                                        w,
+                                        b,
+                                        score_function =  score_function_name,
+                                        **config
+                                    )
+                                else:
+                                    scores_iid_val, score_function = create_score_function(
+                                        iid_train[0],
+                                        iid_train[1],
+                                        iid_train[2],
+                                        iid_val[0],
+                                        iid_val[1],
+                                        iid_val[2],
+                                        w,
+                                        b,
+                                        score_function =  score_function_name,
+                                        **config
+                                    )
                                 # Not necessary to compute for p > 0
                                 scores_iid_test = score_function(
                                     iid_test[0], iid_test[1] 

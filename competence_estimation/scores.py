@@ -69,7 +69,27 @@ def create_score_function(
             score = -softmax(logits, axis=-1).max(axis=-1)
             return score
 
-    elif score_function == "PCA":
+    elif score_function == 'PCA':
+
+        from sklearn.decomposition import PCA
+        if 'n_components' in kwargs:
+            n_components = kwargs['n_components']
+        else:
+            n_components = 0.9
+        assert n_components < 1
+        mod = PCA(n_components=n_components)
+        mod.fit(x_iid_train)
+        rec_err = lambda x: np.mean(np.square((mod.inverse_transform(mod.transform(x))-x)),axis=1)
+
+        scores_id = rec_err(x_iid_val)
+        def score_function(feature, logits):
+            scores = rec_err(feature)
+            return scores
+
+        return scores_id, score_function
+
+
+    elif score_function == "PCA_Old":
         import pyod.models.pca as pca
         clf = pca.PCA(n_components=None, n_selected_components=None, contamination=0.1, copy=True, whiten=False, svd_solver='auto', tol=0.0, iterated_power='auto', random_state=None, weighted=True, standardization=True)
         clf.fit(x_iid_train)
@@ -98,7 +118,7 @@ def create_score_function(
             n_bins = kwargs['n_bins']
             print(f"n_bins {n_bins} chosen")
         else:
-            n_bins =1
+            n_bins =10
         clf = hbos.HBOS(n_bins=n_bins, alpha=0.1, tol=0.5, contamination=0.1)
         clf.fit(x_iid_train)
         score_iid =  clf.decision_function(x_iid_val)

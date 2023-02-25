@@ -25,7 +25,7 @@ def compute_curves(
     num_alphas=500,
     alpha_start=0.000,
     alpha_end=1.0,
-    metric='acc',
+    metric="acc",
     ece_bins=10,
 ):
     """
@@ -44,15 +44,18 @@ def compute_curves(
         - metric_alpha: accuracy or ece in Safe Region S_alpha for alphas in x_axis
         - fracs: fraction of samples in safe rgeion S_alpha
     """
-    if metric == 'acc':
+    if metric == "acc":
         true_false_test = (
-            (torch.from_numpy(logits_ood_test).argmax(1) == torch.from_numpy(labels_ood_test))
+            (
+                torch.from_numpy(logits_ood_test).argmax(1)
+                == torch.from_numpy(labels_ood_test)
+            )
             .float()
             .cpu()
             .view(-1)
             .numpy()
         )
-    elif metric == 'ece':
+    elif metric == "ece":
         ece = _ECELoss(n_bins=ece_bins)
 
     alphas = np.linspace(alpha_start, alpha_end, num_alphas)
@@ -64,7 +67,7 @@ def compute_curves(
     # x_axis is the domain of G(alpha), i.e. where |S_alpha| > 0
     x_axis = []
     for e, q in enumerate(qs):
-        if metric =='acc':
+        if metric == "acc":
             remaining = true_false_test[scores_ood <= q]
             if remaining.shape[0] > 0:
                 acc = np.sum(remaining) / remaining.shape[0]
@@ -72,7 +75,7 @@ def compute_curves(
                 metric_alpha.append(acc)
                 fracs.append(frac)
                 x_axis.append(alphas[e])
-        if metric == 'ece':
+        if metric == "ece":
             remaining_labels = labels_ood_test[scores_ood <= q]
             remaining_logits = logits_ood_test[scores_ood <= q]
 
@@ -101,7 +104,7 @@ def compute_metric(
     labels_ood_test,
     metrics=["intersection_fraction"],
     num_alphas=1000,
-    ece_bins=10
+    ece_bins=10,
 ):
     """
     Returns a dictionary of different queried metrics
@@ -110,15 +113,15 @@ def compute_metric(
         - scores_iid_test: numpy array of scores on in distribution data (test set)
         - scores_ood_test: numpy array of scores on ood data
         - data_iid_val: input data from training distribution (i.e. features of classifier)
-        - logits_iid_val: logits of classifier on iid validation set 
-        - labels_iid_val: ground truth labels on iid validation set 
+        - logits_iid_val: logits of classifier on iid validation set
+        - labels_iid_val: ground truth labels on iid validation set
         - data_iid_test: input data from iid test distribution (i.e. features of classifier)
-        - logits_iid_test: logits of classifier on iid test set 
-        - labels_iid_test: ground truth labels on iid iid set 
+        - logits_iid_test: logits of classifier on iid test set
+        - labels_iid_test: ground truth labels on iid iid set
         - data_ood_test: input data from test distribution (i.e. features of classifier)
         - logits_ood_test: logits of classifier on data_test
         - labels_ood_test: ground truth labels for data_test
-        - metrics: list of metrics that evaluate safe region 
+        - metrics: list of metrics that evaluate safe region
         - num_alphas: amount of quantiles on which metrics are computed
         - ece_bins: number of bins to compute ece
     Return:
@@ -128,17 +131,21 @@ def compute_metric(
     possible_metrics = [
         "accuracy",
         "ece",
-        'ausc_alpha_ece',
-        'ausc_alpha_acc',
-        'ausc_fracs_ece',
-        'ausc_fracs_acc',
-        'fracs'
+        "ausc_alpha_ece",
+        "ausc_alpha_acc",
+        "ausc_fracs_ece",
+        "ausc_fracs_acc",
+        "fracs",
+        "quantiles",
     ]
     assert all(metric in possible_metrics for metric in metrics)
 
     # Compute true-false values on ood test data
     true_false_ood_test = (
-        (torch.from_numpy(logits_ood_test).argmax(1) == torch.from_numpy(labels_ood_test))
+        (
+            torch.from_numpy(logits_ood_test).argmax(1)
+            == torch.from_numpy(labels_ood_test)
+        )
         .float()
         .cpu()
         .view(-1)
@@ -154,7 +161,10 @@ def compute_metric(
     )
     # Compute true-false values on iid test data
     true_false_iid_test = (
-        (torch.from_numpy(logits_iid_test).argmax(1) == torch.from_numpy(labels_iid_test))
+        (
+            torch.from_numpy(logits_iid_test).argmax(1)
+            == torch.from_numpy(labels_iid_test)
+        )
         .float()
         .cpu()
         .view(-1)
@@ -178,26 +188,26 @@ def compute_metric(
         logits_ood_test,
         labels_ood_test,
         num_alphas=num_alphas,
-        metric='acc'
+        metric="acc",
     )
-    
+
     alphas_iid, accs_iid, fracs_iid = compute_curves(
         score_iid_val,
         score_iid_test,
         logits_iid_test,
         labels_iid_test,
         num_alphas=num_alphas,
-        metric='acc'
+        metric="acc",
     )
-    
+
     alphas_ece_ood, metrics_ece_ood, fracs_ece_ood = compute_curves(
         score_iid_val,
         score_ood_test,
         logits_ood_test,
         labels_ood_test,
         num_alphas=num_alphas,
-        metric='ece',
-        ece_bins=ece_bins
+        metric="ece",
+        ece_bins=ece_bins,
     )
 
     alphas_ece_iid, metrics_ece_iid, fracs_ece_iid = compute_curves(
@@ -206,10 +216,10 @@ def compute_metric(
         logits_iid_test,
         labels_iid_test,
         num_alphas=num_alphas,
-        metric='ece',
-        ece_bins=ece_bins
+        metric="ece",
+        ece_bins=ece_bins,
     )
-    
+
     # Output dictionary
     out = {}
 
@@ -219,43 +229,57 @@ def compute_metric(
         out["acc_iid_val"] = accuracy_iid_val
 
     if "ece" in metrics:
-        out['ece_ood_test'] = metric_ece_ood_test
-        out['ece_iid_test'] = metric_ece_iid_test 
-        out['ece_iid_val'] = metric_ece_iid_val
+        out["ece_ood_test"] = metric_ece_ood_test
+        out["ece_iid_test"] = metric_ece_iid_test
+        out["ece_iid_val"] = metric_ece_iid_val
 
     #  Area Under Safe Curve for ece and quantiles alpha
-    if 'ausc_alpha_ece' in metrics:
+    if "ausc_alpha_ece" in metrics:
         out["ausc_alpha_ece_ood_test"] = auc(alphas_ece_ood, metrics_ece_ood)
         out["ausc_alpha_ece_iid_test"] = auc(alphas_ece_iid, metrics_ece_iid)
 
         # Shifted  Version
-        out["ausc_alpha_ece_ood_test_shifted"] = out["ausc_alpha_ece_ood_test"] - (alphas_ece_ood[-1] - alphas_ece_ood[0]) * metric_ece_ood_test
-        out["ausc_alpha_ece_iid_test_shifted"] = out["ausc_alpha_ece_iid_test"] - (alphas_ece_iid[-1] - alphas_ece_iid[0]) * metric_ece_iid_test
+        out["ausc_alpha_ece_ood_test_shifted"] = (
+            out["ausc_alpha_ece_ood_test"]
+            - (alphas_ece_ood[-1] - alphas_ece_ood[0]) * metric_ece_ood_test
+        )
+        out["ausc_alpha_ece_iid_test_shifted"] = (
+            out["ausc_alpha_ece_iid_test"]
+            - (alphas_ece_iid[-1] - alphas_ece_iid[0]) * metric_ece_iid_test
+        )
 
     #  Area Under Safe Curve for ece and fractions in S_alpha
-    if 'ausc_fracs_ece' in metrics:
+    if "ausc_fracs_ece" in metrics:
 
         out["ausc_fracs_ece_ood_test"] = auc(fracs_ece_ood, metrics_ece_ood)
         out["ausc_fracs_ece_iid_test"] = auc(fracs_ece_iid, metrics_ece_iid)
-        
+
         # Shifted  Version
-        out["ausc_fracs_ece_ood_test_shifted"] = out["ausc_fracs_ece_ood_test"] - (fracs_ece_ood[-1] - fracs_ece_ood[0]) * metric_ece_ood_test
-        out["ausc_fracs_ece_iid_test_shifted"] = out["ausc_fracs_ece_iid_test"] - (fracs_ece_iid[-1] - fracs_ece_iid[0]) * metric_ece_iid_test
+        out["ausc_fracs_ece_ood_test_shifted"] = (
+            out["ausc_fracs_ece_ood_test"]
+            - (fracs_ece_ood[-1] - fracs_ece_ood[0]) * metric_ece_ood_test
+        )
+        out["ausc_fracs_ece_iid_test_shifted"] = (
+            out["ausc_fracs_ece_iid_test"]
+            - (fracs_ece_iid[-1] - fracs_ece_iid[0]) * metric_ece_iid_test
+        )
 
     #  Area Under Safe Curve for accuracy and quantiles alpha
-    if 'ausc_alpha_acc' in metrics:
+    if "ausc_alpha_acc" in metrics:
 
         out["ausc_alpha_ood_test"] = auc(alphas_ood, accs_ood)
         out["ausc_alpha_iid_test"] = auc(alphas_iid, accs_iid)
 
         # Shifted  Version
         out["ausc_alpha_ood_test_shifted"] = (
-            out["ausc_alpha_ood_test"] - (alphas_ood[-1] - alphas_ood[0]) * accuracy_ood_test
+            out["ausc_alpha_ood_test"]
+            - (alphas_ood[-1] - alphas_ood[0]) * accuracy_ood_test
         )
         out["ausc_alpha_iid_test_shifted"] = (
-            out["ausc_alpha_iid_test"]- (alphas_iid[-1] - alphas_iid[0]) * accuracy_iid_test
+            out["ausc_alpha_iid_test"]
+            - (alphas_iid[-1] - alphas_iid[0]) * accuracy_iid_test
         )
-        
+
     #  Area Under Safe Curve for accuracy and fractions
     if "ausc_fracs_acc" in metrics:
         out["ausc_fracs_ood_test"] = auc(fracs_ood, accs_ood)
@@ -263,11 +287,33 @@ def compute_metric(
 
         # Shifted  Version
         out["ausc_fracs_ood_test_shifted"] = (
-            out["ausc_fracs_ood_test"] - (fracs_ood[-1] - fracs_ood[0]) * accuracy_ood_test
+            out["ausc_fracs_ood_test"]
+            - (fracs_ood[-1] - fracs_ood[0]) * accuracy_ood_test
         )
         out["ausc_fracs_iid_test_shifted"] = (
-            out["ausc_fracs_iid_test"] - (fracs_iid[-1] - fracs_iid[0]) * accuracy_iid_test
+            out["ausc_fracs_iid_test"]
+            - (fracs_iid[-1] - fracs_iid[0]) * accuracy_iid_test
         )
+
+    if "quantiles" in metrics:
+        qs = np.quantile(score_iid_val, 0.95)
+        mask = torch.from_numpy(score_ood_test) < qs
+
+        # out['n_95'] = ((logits_out[mask].argmax(1) == labels_out[mask]).sum()/ mask.sum()).item()
+        out["n_95_frac"] = mask.sum().item() / logits_ood_test.shape[0] 
+
+        out["n_95"] = (
+            (
+                torch.from_numpy(logits_ood_test[mask]).argmax(1)
+                == torch.from_numpy(labels_ood_test[mask])
+            ).sum()
+            / mask.sum()
+        ).item()
+
+        # out['n_95_shifted'] =    outs['n_95'] - outs['acc_ood_test']
+        # out['n_95_frac'] = (mask.sum()/ mask.shape[0]).item()
+        # out['n_95_shifted_iid_val'] =    outs['n_95'] - outs['acc_iid_val']
+        # out['n_95_shifted_iid_test'] =    outs['n_95'] - outs['acc_iid_test']
 
     # Information about fractions
     if "fracs" in metrics:
@@ -286,10 +332,10 @@ def compute_metric(
             alphas_iid, accs_iid, accuracy_iid_val, non_below_default="last_x"
         )
 
-        out['frac_remaining_ood_test'] = fracs_ood[-1]
-        out['frac_remaining_iid_test'] = fracs_iid[-1]
+        out["frac_remaining_ood_test"] = fracs_ood[-1]
+        out["frac_remaining_iid_test"] = fracs_iid[-1]
 
-        '''
+        """
         earliest = 0
         if fracs_ood[0] < 0.1:
             for e, f in enumerate(fracs_ood):
@@ -302,7 +348,7 @@ def compute_metric(
         )
             alphas_ood, accs_ood, accuracy_iid_val, non_below_default="last_x"
         )
-        '''
+        """
 
     return out
 
@@ -330,4 +376,3 @@ def first_below_line(x_axis, y_values, line, non_below_default="last_x"):
         return x_axis[-1]
     else:
         return non_below_default
-
