@@ -27,7 +27,8 @@ metrics  = [
     'ausc_alpha_acc',
     'ausc_fracs_ece',
     'ausc_fracs_acc',
-    'fracs'
+    'fracs',
+    'quantiles'
 ]
 
 if __name__ == "__main__":
@@ -170,7 +171,11 @@ if __name__ == "__main__":
                                 )
 
                             scores_ood_test = score_function(features_out, logits_out)
+                            scores_iid_train = score_function(iid_train[0], iid_train[1])
 
+                            results_scores[score_function_name][dataset][algorithm][
+                                test_domain
+                            ][p]["scores_iid_train"] = scores_iid_train
                             results_scores[score_function_name][dataset][algorithm][
                                 test_domain
                             ][p]["scores_iid_val"] = scores_iid_val
