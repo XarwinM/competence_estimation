@@ -17,6 +17,7 @@ ENVS_DIC = {
     "TerraIncognita": 4,
     "SVIRO": 10,
     "DomainNet": 6,
+    "WILDSCamelyon": 5,
 }
 
 # Metrics we compute

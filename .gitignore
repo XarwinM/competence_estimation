@@ -36,3 +36,27 @@ Stefan_Plots.ipynb
 figures/
 results_after/
 
+
+.commands_classified.txt
+Stefan_Plots-Copy1.ipynb
+Untitled-Copy1.ipynb
+Untitled.ipynb
+WILDS_Plot.ipynb
+acc_boxplots.pdf
+acc_boxplots_tentative.pdf
+competence_estimation/classifiers.py
+competence_estimation/create_classified_scores.py
+frac_boxplots_tentative.pdf
+restuls_wilds/
+results_classification/
+results_wilds/
+safe_curves.pdf
+safe_curves_ERM_DomainNet.pdf
+safe_curves_ERM_OfficeHome.pdf
+safe_curves_ERM_PACS.pdf
+safe_curves_ERM_SVIRO.pdf
+safe_curves_ERM_TerraIncognita.pdf
+safe_curves_ERM_VLCS.pdf
+safe_curves_pacs.pdf
+safe_curves_wilds2.pdf
+
