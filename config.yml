@@ -1,0 +1,8 @@
+knn:
+    K: 1
+GMM:
+    n_components: 1
+HBOS:
+    n_bins: 10
+PCA:
+    n_components: 0.9

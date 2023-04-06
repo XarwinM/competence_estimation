@@ -5,6 +5,8 @@ import time
 import numpy as np
 import torch
 
+import yaml
+
 from competence_estimation.utils import load_data, get_network_weights, mix_open
 from competence_estimation.scores  import create_score_function 
 from competence_estimation.metrics  import compute_metric
@@ -45,7 +47,8 @@ if __name__ == "__main__":
     parser.add_argument("--recompute", type=int, default=0)
     args = parser.parse_args()
 
-    config = {'n_bins':10}
+    with open("config.yml", "r") as file:
+        config = yaml.safe_load(file)
 
 
     if args.add_to_existing:
@@ -65,7 +68,7 @@ if __name__ == "__main__":
 
     args.percentages = [float(p) for p in args.percentages]
 
-
+    # Implementation of for loop could be more efficient
     for score_function_name in args.score_fct:
         if score_function_name not in results:
             results[score_function_name] = {}

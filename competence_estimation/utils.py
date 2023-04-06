@@ -77,69 +77,15 @@ def load_data(algorithm, dataset, test_domain, data_dir, fast=False):
     """
     dataset_path = f"{data_dir}/{dataset}/test_env_{test_domain}/"
     
-    '''
-    x_train, y_train = torch.from_numpy(
-        np.load(f"{dataset_path}/{algorithm}_data_train.npy")
-    ), torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_train.npy"))
-    x_val, y_val = torch.from_numpy(
-        np.load(f"{dataset_path}/{algorithm}_data_val.npy")
-    ), torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_val.npy"))
-    x_test, y_test = torch.from_numpy(
-        np.load(f"{dataset_path}/{algorithm}_data_test.npy")
-    ), torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_test.npy"))
-    '''
-    if not fast or True:
-        x_iid_train, y_iid_train = np.load(f"{dataset_path}/{algorithm}_features_iid_train.npy") , np.load(f"{dataset_path}/{algorithm}_labels_iid_train.npy")
-        x_iid_val, y_iid_val = np.load(f"{dataset_path}/{algorithm}_features_iid_val.npy"), np.load(f"{dataset_path}/{algorithm}_labels_iid_val.npy")
-        x_iid_test, y_iid_test =  np.load(f"{dataset_path}/{algorithm}_features_iid_test.npy") , np.load(f"{dataset_path}/{algorithm}_labels_iid_test.npy")
-        x_ood_test, y_ood_test =  np.load(f"{dataset_path}/{algorithm}_features_ood_test.npy"), np.load(f"{dataset_path}/{algorithm}_labels_ood_test.npy")
+    x_iid_train, y_iid_train = np.load(f"{dataset_path}/{algorithm}_features_iid_train.npy") , np.load(f"{dataset_path}/{algorithm}_labels_iid_train.npy")
+    x_iid_val, y_iid_val = np.load(f"{dataset_path}/{algorithm}_features_iid_val.npy"), np.load(f"{dataset_path}/{algorithm}_labels_iid_val.npy")
+    x_iid_test, y_iid_test =  np.load(f"{dataset_path}/{algorithm}_features_iid_test.npy") , np.load(f"{dataset_path}/{algorithm}_labels_iid_test.npy")
+    x_ood_test, y_ood_test =  np.load(f"{dataset_path}/{algorithm}_features_ood_test.npy"), np.load(f"{dataset_path}/{algorithm}_labels_ood_test.npy")
 
-        logits_iid_train = np.load(f"{dataset_path}/{algorithm}_logits_iid_train.npy")
-        logits_iid_val = np.load(f"{dataset_path}/{algorithm}_logits_iid_val.npy")
-        logits_iid_test = np.load(f"{dataset_path}/{algorithm}_logits_iid_test.npy")
-        logits_ood_test = np.load(f"{dataset_path}/{algorithm}_logits_ood_test.npy")
-        '''
-        x_iid_train, y_iid_train = torch.from_numpy(
-            np.load(f"{dataset_path}/{algorithm}_features_iid_train.npy")
-        ), torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_iid_train.npy"))
-        x_iid_val, y_iid_val = torch.from_numpy(
-            np.load(f"{dataset_path}/{algorithm}_features_iid_val.npy")
-        ), torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_iid_val.npy"))
-        x_iid_test, y_iid_test = torch.from_numpy(
-            np.load(f"{dataset_path}/{algorithm}_features_iid_test.npy")
-        ), torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_iid_test.npy"))
-
-        x_ood_test, y_ood_test = torch.from_numpy(
-            np.load(f"{dataset_path}/{algorithm}_features_ood_test.npy")
-        ), torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_ood_test.npy"))
-
-        logits_iid_train = torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_logits_iid_train.npy"))
-        logits_iid_val = torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_logits_iid_val.npy"))
-        logits_iid_test =torch.from_numpy( np.load(f"{dataset_path}/{algorithm}_logits_iid_test.npy"))
-        logits_ood_test = torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_logits_ood_test.npy"))
-        '''
-    else:
-        print('Only training with 200 samples')
-        n = 200
-        x_iid_train, y_iid_train = torch.from_numpy(
-            np.load(f"{dataset_path}/{algorithm}_features_iid_train.npy")
-        )[:n], torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_iid_train.npy"))[:n]
-        x_iid_val, y_iid_val = torch.from_numpy(
-            np.load(f"{dataset_path}/{algorithm}_features_iid_val.npy")
-        )[:n], torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_iid_val.npy"))[:n]
-        x_iid_test, y_iid_test = torch.from_numpy(
-            np.load(f"{dataset_path}/{algorithm}_features_iid_test.npy")
-        )[:n], torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_iid_test.npy"))[:n]
-
-        x_ood_test, y_ood_test = torch.from_numpy(
-            np.load(f"{dataset_path}/{algorithm}_features_ood_test.npy")
-        )[:n], torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_labels_ood_test.npy"))[:n]
-
-        logits_iid_train = torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_logits_iid_train.npy"))[:n]
-        logits_iid_val = torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_logits_iid_val.npy"))[:n]
-        logits_iid_test =torch.from_numpy( np.load(f"{dataset_path}/{algorithm}_logits_iid_test.npy"))[:n]
-        logits_ood_test = torch.from_numpy(np.load(f"{dataset_path}/{algorithm}_logits_ood_test.npy"))[:n]
-
+    logits_iid_train = np.load(f"{dataset_path}/{algorithm}_logits_iid_train.npy")
+    logits_iid_val = np.load(f"{dataset_path}/{algorithm}_logits_iid_val.npy")
+    logits_iid_test = np.load(f"{dataset_path}/{algorithm}_logits_iid_test.npy")
+    logits_ood_test = np.load(f"{dataset_path}/{algorithm}_logits_ood_test.npy")
 
     return (
         (x_iid_train, logits_iid_train, y_iid_train),
