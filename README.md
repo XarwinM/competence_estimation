@@ -51,7 +51,7 @@ gdown.download_folder(url, output=output, quiet=True, use_cookies=False)
 
 # Quick Start and Demo #
 
-A short [demo notebook](`demo.ipynb`) shows how plots can be created for already compute scores and how new scores can be computed for a given pre-trained classifier. 
+A short [demo notebook](`demo.ipynb`) shows how plots can be created for already computed scores and how new scores can be computed for a given pre-trained classifier. 
 
 
 ## Training ##
@@ -61,7 +61,7 @@ Scores can be computed as for instance via
 python competence_estimation/main_scores.py --data_dir data --output_dir results --datasets PACS --algorithm ERM --test_domains 0 
 ```
 Here we assume that logits, features, labels and network weights are given for PACS where the unknown test domain is domain 0. 
-For more details `python competence_estimation/main_scores.py --help`
+For more details execute `python competence_estimation/main_scores.py --help`
 
 ## Evaluation and Plots ##
 
