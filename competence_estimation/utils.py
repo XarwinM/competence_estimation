@@ -84,19 +84,19 @@ def load_data(algorithm, dataset, test_domain, data_dir, fast=False):
     """
     dataset_path = f"{data_dir}/{dataset}/test_env_{test_domain}/"
     
-    x_iid_train, y_iid_train = np.load(f"{dataset_path}/{algorithm}_features_iid_train.npy") , np.load(f"{dataset_path}/{algorithm}_labels_iid_train.npy")
-    x_iid_val, y_iid_val = np.load(f"{dataset_path}/{algorithm}_features_iid_val.npy"), np.load(f"{dataset_path}/{algorithm}_labels_iid_val.npy")
-    x_iid_test, y_iid_test =  np.load(f"{dataset_path}/{algorithm}_features_iid_test.npy") , np.load(f"{dataset_path}/{algorithm}_labels_iid_test.npy")
+    x_id_train, y_id_train = np.load(f"{dataset_path}/{algorithm}_features_id_train.npy") , np.load(f"{dataset_path}/{algorithm}_labels_id_train.npy")
+    x_id_val, y_id_val = np.load(f"{dataset_path}/{algorithm}_features_id_val.npy"), np.load(f"{dataset_path}/{algorithm}_labels_id_val.npy")
+    x_id_test, y_id_test =  np.load(f"{dataset_path}/{algorithm}_features_id_test.npy") , np.load(f"{dataset_path}/{algorithm}_labels_id_test.npy")
     x_ood_test, y_ood_test =  np.load(f"{dataset_path}/{algorithm}_features_ood_test.npy"), np.load(f"{dataset_path}/{algorithm}_labels_ood_test.npy")
 
-    logits_iid_train = np.load(f"{dataset_path}/{algorithm}_logits_iid_train.npy")
-    logits_iid_val = np.load(f"{dataset_path}/{algorithm}_logits_iid_val.npy")
-    logits_iid_test = np.load(f"{dataset_path}/{algorithm}_logits_iid_test.npy")
+    logits_id_train = np.load(f"{dataset_path}/{algorithm}_logits_id_train.npy")
+    logits_id_val = np.load(f"{dataset_path}/{algorithm}_logits_id_val.npy")
+    logits_id_test = np.load(f"{dataset_path}/{algorithm}_logits_id_test.npy")
     logits_ood_test = np.load(f"{dataset_path}/{algorithm}_logits_ood_test.npy")
 
     return (
-        (x_iid_train, logits_iid_train, y_iid_train),
-        (x_iid_val, logits_iid_val, y_iid_val),
-        (x_iid_test, logits_iid_test, y_iid_test),
+        (x_id_train, logits_id_train, y_id_train),
+        (x_id_val, logits_id_val, y_id_val),
+        (x_id_test, logits_id_test, y_id_test),
         (x_ood_test, logits_ood_test, y_ood_test),
     )
