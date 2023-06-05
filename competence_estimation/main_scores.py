@@ -263,8 +263,8 @@ if __name__ == "__main__":
             f"Score function {score_function_name} took around {time.time() - start_time} seconds to compute"
         )
 
-        with open(f"{args.output_dir}/results_long.pickle", "wb") as handle:
+        with open(f"{args.output_dir}/results.pickle", "wb") as handle:
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        with open(f"{args.output_dir}/results_scores_long.pickle", "wb") as handle:
+        with open(f"{args.output_dir}/results_scores.pickle", "wb") as handle:
             pickle.dump(results_scores, handle, protocol=pickle.HIGHEST_PROTOCOL)
         print("Results saved")
