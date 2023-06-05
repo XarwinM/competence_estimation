@@ -32,7 +32,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--output_dir",
-        help="Directory where results are saved",
+        help="Directory where results are stored",
         type=str,
         required=True,
     )
@@ -70,8 +70,17 @@ if __name__ == "__main__":
         "--recompute",
         help="if 0: do not recompute scores if they are already compute; else: do recompute scores",
         type=int,
-        default=0,
+        default=1,
     )
+
+    parser.add_argument(
+        "--test_domains",
+        help="list of domains that are considered new",
+        nargs="+",
+        type=int,
+        default=[0],
+    )
+    
     args = parser.parse_args()
 
     # Load config file for score functions
@@ -116,7 +125,7 @@ if __name__ == "__main__":
                     results[score_function_name][dataset][algorithm] = {}
                     results_scores[score_function_name][dataset][algorithm] = {}
 
-                for test_domain in range(ENVS_DIC[dataset]):
+                for test_domain in args.test_domains:
                     if (
                         test_domain
                         not in results[score_function_name][dataset][algorithm]
@@ -250,8 +259,8 @@ if __name__ == "__main__":
                                 iid_val[2],
                                 iid_test[1],
                                 iid_test[2],
-                                logits_out=logits_out,
-                                labels_out=labels_out,
+                                logits_ood_test=logits_out,
+                                labels_ood_test=labels_out,
                                 metrics=metrics,
                             )
 
