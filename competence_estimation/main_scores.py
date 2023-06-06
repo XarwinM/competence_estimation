@@ -12,7 +12,12 @@ import torch
 
 import yaml
 
-from competence_estimation.utils import load_data, get_network_weights, mix_open, ENVS_DIC
+from competence_estimation.utils import (
+    load_data,
+    get_network_weights,
+    mix_open,
+    ENVS_DIC,
+)
 from competence_estimation.scores import create_score_function
 from competence_estimation.metrics import compute_metric
 
@@ -20,7 +25,6 @@ from competence_estimation.metrics import compute_metric
 metrics = ["accuracy", "quantile_95"]
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
         description="Run a sweep over different datasets and algorithms"
     )
@@ -80,7 +84,7 @@ if __name__ == "__main__":
         type=int,
         default=[0],
     )
-    
+
     args = parser.parse_args()
 
     # Load config file for score functions

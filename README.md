@@ -2,7 +2,7 @@
 
 <img src="media/conceptual.png">
 
-For a quick start take a look at the [Demo-Notebook](demo.ipynb) (make sure to install the packages as described below).
+For a quick start, take a look at the [Demo-Notebook](demo.ipynb) and make sure to install the packages described below.
 
 
 This repository contains the code for the article [Finding Competence Regions in Domain Generalization](https://openreview.net/forum?id=TSy0vuwQFN).
@@ -13,7 +13,7 @@ The article and the repository aim to explore failure case prediction in the Dom
 
 * The Code has been tested with Python 3.9
 * A suitabble python environment can be installed with Minconda3 as follows
-  *  `conda env create -f environment.yml`
+  *  ``conda env create -f environment.yml``
   * ``conda activate comp``
   * ``pip install -e .``
 

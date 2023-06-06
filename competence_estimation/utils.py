@@ -15,16 +15,19 @@ ENVS_DIC = {
     "DomainNet": 6,
 }
 
-def mix_open(features_ood, logits_ood, labels_ood,  features_open, logits_open, percentage=0.5):
+
+def mix_open(
+    features_ood, logits_ood, labels_ood, features_open, logits_open, percentage=0.5
+):
     """
-    Mixes features of unknown classes to existing features (open-world scneario). 
+    Mixes features of unknown classes to existing features (open-world scneario).
     Output contains features of unknown classes that make up {percentage} of all instances
     Arguments:
         - features_ood: Features of ood distribution
         - logits_ood: Logits of ood distribution
         - labels_ood: Labels of ood distribution
-        - features_open: Features of unknown classes 
-        - logits_open: Logits of unknown classes 
+        - features_open: Features of unknown classes
+        - logits_open: Logits of unknown classes
         - percentage: Percentage of unkowns in output
     Returns:
         - features_out: Features mixed with unkown classes
@@ -32,27 +35,31 @@ def mix_open(features_ood, logits_ood, labels_ood,  features_open, logits_open, 
         - labels_out: Labels of known classes and label -1 for unknown class
 
     """
+
     n = features_ood.shape[0]
-    n_open= int(n*percentage / (1-percentage))
+    n_open = int(n * percentage / (1 - percentage))
     if n_open <= features_open.shape[0]:
         pass
     else:
         # If we cannot achieve the right percentage with n samples of known classes
         # In this case we have to 'shorten' n
-        n = int(features_open.shape[0]* ((1-percentage)/percentage))
+        n = int(features_open.shape[0] * ((1 - percentage) / percentage))
     torch.manual_seed(0)
     idx = torch.randperm(features_open.shape[0])
     features_open = features_open[idx]
 
-    features_out = np.concatenate( ( features_ood[:n], features_open[:n_open]))
-    logits_out = np.concatenate( (logits_ood[:n], logits_open[:n_open]))
+    features_out = np.concatenate((features_ood[:n], features_open[:n_open]))
+    logits_out = np.concatenate((logits_ood[:n], logits_open[:n_open]))
 
-    labels_out = np.concatenate((labels_ood[:n], np.zeros((logits_open[:n_open].shape[0])) -1), 0)
+    labels_out = np.concatenate(
+        (labels_ood[:n], np.zeros((logits_open[:n_open].shape[0])) - 1), 0
+    )
 
-    assert labels_out.shape[0] * percentage - min(n_open, logits_open.shape[0]) >= -1 
-    assert labels_out.shape[0] * percentage - min(n_open, logits_open.shape[0]) <= 1 
+    assert labels_out.shape[0] * percentage - min(n_open, logits_open.shape[0]) >= -1
+    assert labels_out.shape[0] * percentage - min(n_open, logits_open.shape[0]) <= 1
 
     return features_out, logits_out, labels_out
+
 
 def get_network_weights(algorithm, dataset, test_domain, dataset_path):
     """
@@ -60,8 +67,9 @@ def get_network_weights(algorithm, dataset, test_domain, dataset_path):
     """
     W = np.load(f"{dataset_path}/{dataset}/test_env_{test_domain}/{algorithm}_W.npy")
     b = np.load(f"{dataset_path}/{dataset}/test_env_{test_domain}/{algorithm}_b.npy")
-                
+
     return W, b
+
 
 def load_data(algorithm, dataset, test_domain, data_dir, fast=False):
     """
@@ -83,11 +91,19 @@ def load_data(algorithm, dataset, test_domain, data_dir, fast=False):
         - y_test: as y_train on test set
     """
     dataset_path = f"{data_dir}/{dataset}/test_env_{test_domain}/"
-    
-    x_id_train, y_id_train = np.load(f"{dataset_path}/{algorithm}_features_id_train.npy") , np.load(f"{dataset_path}/{algorithm}_labels_id_train.npy")
-    x_id_val, y_id_val = np.load(f"{dataset_path}/{algorithm}_features_id_val.npy"), np.load(f"{dataset_path}/{algorithm}_labels_id_val.npy")
-    x_id_test, y_id_test =  np.load(f"{dataset_path}/{algorithm}_features_id_test.npy") , np.load(f"{dataset_path}/{algorithm}_labels_id_test.npy")
-    x_ood_test, y_ood_test =  np.load(f"{dataset_path}/{algorithm}_features_ood_test.npy"), np.load(f"{dataset_path}/{algorithm}_labels_ood_test.npy")
+
+    x_id_train, y_id_train = np.load(
+        f"{dataset_path}/{algorithm}_features_id_train.npy"
+    ), np.load(f"{dataset_path}/{algorithm}_labels_id_train.npy")
+    x_id_val, y_id_val = np.load(
+        f"{dataset_path}/{algorithm}_features_id_val.npy"
+    ), np.load(f"{dataset_path}/{algorithm}_labels_id_val.npy")
+    x_id_test, y_id_test = np.load(
+        f"{dataset_path}/{algorithm}_features_id_test.npy"
+    ), np.load(f"{dataset_path}/{algorithm}_labels_id_test.npy")
+    x_ood_test, y_ood_test = np.load(
+        f"{dataset_path}/{algorithm}_features_ood_test.npy"
+    ), np.load(f"{dataset_path}/{algorithm}_labels_ood_test.npy")
 
     logits_id_train = np.load(f"{dataset_path}/{algorithm}_logits_id_train.npy")
     logits_id_val = np.load(f"{dataset_path}/{algorithm}_logits_id_val.npy")

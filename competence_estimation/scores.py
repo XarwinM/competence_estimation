@@ -16,6 +16,7 @@ from scipy.special import logsumexp
 
 normalizer = lambda x: x / (np.linalg.norm(x, ord=2, axis=-1, keepdims=True) + 1e-10)
 
+
 def create_score_function(
     x_id_train,
     logits_id_train,
@@ -70,7 +71,6 @@ def create_score_function(
             return score
 
     elif score_function == "PCA":
-
         from sklearn.decomposition import PCA
 
         assert kwargs["PCA"]["n_components"] < 1
@@ -175,7 +175,6 @@ def create_score_function(
         scores_iid = -D[:, -1]
 
         def score_function(features, logits):
-
             fest = normalizer(features)
             D, _ = index.search(fest, K)
             scores_ood_test = -D[:, -1]
@@ -254,7 +253,6 @@ def create_score_function(
         score_id = -vlogit_id_val + energy_id_val
 
         def score_function(features, logits):
-
             energy_ood = logsumexp(logits, axis=-1)
             vlogit_ood = norm(np.matmul(features - u, NS), axis=-1) * alpha
             score_ood = -vlogit_ood + energy_ood
