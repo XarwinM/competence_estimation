@@ -142,7 +142,7 @@ if __name__ == "__main__":
                             test_domain
                         ] = {}
 
-                        iid_train, iid_val, iid_test, ood_test = load_data(
+                        id_train, id_val, id_test, ood_test = load_data(
                             algorithm, dataset, test_domain, args.data_dir, fast=False
                         )
                         w, b = get_network_weights(
@@ -196,21 +196,21 @@ if __name__ == "__main__":
                                 )
 
                             if e == 0:
-                                if iid_train[0].shape[0] > 50_000:
+                                if id_train[0].shape[0] > 50_000:
                                     # If more than 50_000 training data: shorten training data
-                                    features_fit = iid_train[0]
+                                    features_fit = id_train[0]
                                     torch.manual_seed(0)
                                     idx = torch.randperm(features_fit.shape[0])[:50_000]
                                     (
-                                        scores_iid_val,
+                                        scores_id_val,
                                         score_function,
                                     ) = create_score_function(
-                                        iid_train[0][idx],
-                                        iid_train[1][idx],
-                                        iid_train[2][idx],
-                                        iid_val[0],
-                                        iid_val[1],
-                                        iid_val[2],
+                                        id_train[0][idx],
+                                        id_train[1][idx],
+                                        id_train[2][idx],
+                                        id_val[0],
+                                        id_val[1],
+                                        id_val[2],
                                         w,
                                         b,
                                         score_function=score_function_name,
@@ -218,51 +218,51 @@ if __name__ == "__main__":
                                     )
                                 else:
                                     (
-                                        scores_iid_val,
+                                        scores_id_val,
                                         score_function,
                                     ) = create_score_function(
-                                        iid_train[0],
-                                        iid_train[1],
-                                        iid_train[2],
-                                        iid_val[0],
-                                        iid_val[1],
-                                        iid_val[2],
+                                        id_train[0],
+                                        id_train[1],
+                                        id_train[2],
+                                        id_val[0],
+                                        id_val[1],
+                                        id_val[2],
                                         w,
                                         b,
                                         score_function=score_function_name,
                                         **config,
                                     )
                                 # Not necessary to compute for p > 0
-                                scores_iid_test = score_function(
-                                    iid_test[0], iid_test[1]
+                                scores_id_test = score_function(
+                                    id_test[0], id_test[1]
                                 )
 
                             scores_ood_test = score_function(features_out, logits_out)
-                            scores_iid_train = score_function(
-                                iid_train[0], iid_train[1]
+                            scores_id_train = score_function(
+                                id_train[0], id_train[1]
                             )
 
                             results_scores[score_function_name][dataset][algorithm][
                                 test_domain
-                            ][p]["scores_iid_train"] = scores_iid_train
+                            ][p]["id_train"] = scores_id_train
                             results_scores[score_function_name][dataset][algorithm][
                                 test_domain
-                            ][p]["scores_iid_val"] = scores_iid_val
+                            ][p]["id_val"] = scores_id_val
                             results_scores[score_function_name][dataset][algorithm][
                                 test_domain
-                            ][p]["scores_iid_test"] = scores_iid_test
+                            ][p]["id_test"] = scores_id_test
                             results_scores[score_function_name][dataset][algorithm][
                                 test_domain
-                            ][p]["scores_ood_test"] = scores_ood_test
+                            ][p]["ood_test"] = scores_ood_test
 
                             outs = compute_metric(
-                                scores_iid_val,
-                                scores_iid_test,
+                                scores_id_val,
+                                scores_id_test,
                                 scores_ood_test,
-                                iid_val[1],
-                                iid_val[2],
-                                iid_test[1],
-                                iid_test[2],
+                                id_val[1],
+                                id_val[2],
+                                id_test[1],
+                                id_test[2],
                                 logits_ood_test=logits_out,
                                 labels_ood_test=labels_out,
                                 metrics=metrics,
